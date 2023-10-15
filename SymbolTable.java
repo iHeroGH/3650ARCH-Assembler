@@ -1,10 +1,14 @@
 import java.util.Map;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class SymbolTable{
 
     Map<String, Integer> symbolTable;
-    private static int freeAddress = 16;
 
     public SymbolTable(){
         this.symbolTable = new HashMap<String, Integer>();
@@ -32,5 +36,69 @@ public class SymbolTable{
     public int getAddress(String symbol){
         return this.symbolTable.get(symbol);
     }
+
+    public void readFile(String fileName){
+        fileName = fileName + ".asm";
+
+        // March through file and add necessary symbols and variables
+        try {
+            File file = new File(fileName);
+            parseSymbols(new Scanner(file));
+            parseVariables(new Scanner(file));
+        } catch (FileNotFoundException e){
+            System.out.println(
+                "The provided input file (" + fileName + ") was not found."
+            );
+        } catch (Exception e){ // An unexpected error
+            System.out.println(
+                "Something went wrong reading the input file (" + fileName + ")."
+            );
+            e.printStackTrace();
+        }
+    }
+
+    public void parseSymbols(Scanner scanner){
+        int currCommandAddress = 0;
+        String curr = "";
+        while (scanner.hasNextLine()){
+            curr = Assembler.sanitizeCommand(scanner.nextLine());
+            if (!Assembler.shouldAddCommand(curr)){
+                continue;
+            }
+
+            if (curr.matches("\\(.*\\)")){
+                String label = curr.substring(1, curr.length() - 1);
+                if (!this.contains(label)){
+                    this.addEntry(label, currCommandAddress);
+                }
+            } else {
+                currCommandAddress++;
+            }
+        }
+
+        scanner.close();
+    }
+
+    public void parseVariables(Scanner scanner){
+        int freeAddress = 16;
+        String curr = "";
+        while (scanner.hasNextLine()){
+            curr = Assembler.sanitizeCommand(scanner.nextLine());
+
+            if (!Assembler.shouldAddCommand(curr)){
+                continue;
+            }
+
+            if (curr.matches("@\\D+")){
+                String symbol = curr.substring(1);
+                if (!this.contains(symbol)){
+                    this.addEntry(symbol, freeAddress);
+                    freeAddress++;
+                }
+            }
+        }
+        scanner.close();
+    }
+
 
 }

@@ -21,6 +21,7 @@ public class Assembler{
         try {
             File file = new File(this.fileName + ".asm");
             this.scanner = new Scanner(file);
+            this.symbolTable.readFile(this.fileName);
         } catch (FileNotFoundException e){
             System.out.println(
                 "The provided input file (" + fileName + ".asm) was not found."
@@ -46,11 +47,9 @@ public class Assembler{
             String curr = "";
             while (hasMoreCommands()){
                 advance();
-                curr = currentCommand
-                .replaceAll("\\s", "")
-                .replaceAll("//.*", "");
+                curr = sanitizeCommand(currentCommand);
 
-                if (curr.startsWith("//") || curr.length() == 0){
+                if (!shouldAddCommand(curr)){
                     continue;
                 }
 
@@ -60,7 +59,7 @@ public class Assembler{
             scanner.close();
         } catch (Exception e){ // An unexpected error
             System.out.println(
-                "Something went wrong reading the input file (" + fileName + ")."
+                "Something went wrong reading the input file (" + fileName + ".asm)."
             );
             e.printStackTrace();
         }
@@ -68,12 +67,29 @@ public class Assembler{
         return content;
     }
 
+    public static String sanitizeCommand(String command){
+        return command.replaceAll("\\s", "")
+            .replaceAll("//.*", "");
+    }
+
+    public static boolean shouldAddCommand(String command){
+        return !(
+            command.startsWith("//") ||
+            command.length() == 0
+        );
+    }
+
     public void writeToFile(List<Command> content){
         try {
             PrintWriter writer = new PrintWriter(fileName + ".hack");
 
             // Write all the data from the contents list to the file
+            String instruction = "";
             for(Command command : content){
+                instruction = command.getFullInstruction();
+                if (instruction.length() == 0){
+                    continue;
+                }
                 writer.println(command.getFullInstruction());
             }
 

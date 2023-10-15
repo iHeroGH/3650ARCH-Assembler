@@ -1,15 +1,11 @@
-@SP
-@LCL
-@ARG
-@THIS
-@THAT
 @R0
-@R1
-@R2
-@R4
-@R8
-@R14
-@R15
-@SCREEN
-@KBD
-@21309
+   @R1
+   @OUTPUT_FIRST //er0ihjerv
+   @R1 //wevinbeowrvi
+   @OUTPUT_D
+(OUTPUT_FIRST)
+   @R0
+(OUTPUT_D)
+   @R2
+(INFINITE_LOOP)
+   @INFINITE_LOOP

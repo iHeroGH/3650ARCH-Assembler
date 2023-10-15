@@ -19,8 +19,9 @@ public class Command {
     public String decodeInstruction(){
         if (instruction.startsWith("@")){
             commandType = CommandType.A_COMMAND;
-        } else if (instruction.matches("(.*)")){
+        } else if (instruction.matches("\\(.*\\)")){
             commandType = CommandType.L_COMMAND;
+            return "";
         } else {
             commandType = CommandType.C_COMMAND;
         }
