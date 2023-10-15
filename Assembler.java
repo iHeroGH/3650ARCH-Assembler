@@ -8,40 +8,56 @@ import java.util.ArrayList;
 
 public class Assembler{
 
-    protected static SymbolTable symbolMap = new SymbolTable();
-    public static void main(String[] args){
-        List<String> instructions = readFile("src/test");
-        List<String> content = decodeInstructions(instructions);
-        writeToFile("src/test", content);
-    }
+    private SymbolTable symbolTable;
+    private String fileName;
+    private Scanner scanner;
+    private String currentCommand;
 
-    public static List<String> readFile(String fileName){
-        fileName = fileName + ".asm";
-        List<String> content = new ArrayList<String>();
+    public Assembler(String fileName){
+        this.fileName = fileName;
+        this.symbolTable = new SymbolTable();
+        this.currentCommand = null;
 
         try {
-            File file = new File(fileName);
-            Scanner scanner = new Scanner(file);
+            File file = new File(this.fileName + ".asm");
+            this.scanner = new Scanner(file);
+        } catch (FileNotFoundException e){
+            System.out.println(
+                "The provided input file (" + fileName + ".asm) was not found."
+            );
+        }
 
-            // Write all the data from the input file to the contents list
+        writeToFile(readFile());
+    }
+
+    public boolean hasMoreCommands(){
+        return this.scanner.hasNextLine();
+    }
+
+    public void advance(){
+        this.currentCommand = scanner.nextLine();
+    }
+
+    public List<Command> readFile(){
+        List<Command> content = new ArrayList<Command>();
+
+        // Write all the data from the input file to the contents list
+        try {
             String curr = "";
-            while (scanner.hasNextLine()){
-                curr = scanner.nextLine()
-                        .replaceAll("\\s", "")
-                        .replaceAll("//.*", "");
+            while (hasMoreCommands()){
+                advance();
+                curr = currentCommand
+                .replaceAll("\\s", "")
+                .replaceAll("//.*", "");
 
                 if (curr.startsWith("//") || curr.length() == 0){
                     continue;
                 }
 
-                content.add(curr);
+                content.add(new Command(curr, this.symbolTable));
             }
 
             scanner.close();
-        } catch (FileNotFoundException e){
-            System.out.println(
-                "The provided input file (" + fileName + ") was not found."
-            );
         } catch (Exception e){ // An unexpected error
             System.out.println(
                 "Something went wrong reading the input file (" + fileName + ")."
@@ -52,129 +68,25 @@ public class Assembler{
         return content;
     }
 
-    public static void writeToFile(String fileName, List<String> content){
-        fileName = fileName + ".hack";
-
+    public void writeToFile(List<Command> content){
         try {
-            PrintWriter writer = new PrintWriter(fileName);
+            PrintWriter writer = new PrintWriter(fileName + ".hack");
 
             // Write all the data from the contents list to the file
-            for(String line : content){
-                writer.println(line);
+            for(Command command : content){
+                writer.println(command.getFullInstruction());
             }
 
             writer.close();
         } catch (FileNotFoundException e){
             System.out.println(
-                "The provided output file (" + fileName + ") could not be created."
+                "The provided output file (" + fileName + ".hack) could not be created."
             );
         } catch (Exception e){ // An unexpected error
             System.out.println(
-                "Something went wrong writing to the output file (" + fileName + ")."
+                "Something went wrong writing to the output file (" + fileName + ".hack)."
             );
             e.printStackTrace();
         }
-    }
-
-    public static List<String> decodeInstructions(List<String> instructions){
-        List<String> decodedInstructions = new ArrayList<String>();
-
-        for(String instruction : instructions){
-            decodedInstructions.add(decodeInstruction(instruction));
-        }
-
-        return decodedInstructions;
-    }
-
-    public static String decodeInstruction(String instruction){
-        String opCode;
-        boolean isAInstruction;
-
-        if (instruction.startsWith("@")){
-            opCode = "0";
-            isAInstruction = true;
-        } else {
-            opCode = "111";
-            isAInstruction = false;
-        }
-
-        String decoded = "";
-        if (isAInstruction){
-            String fullValue = zeroPad(
-                Integer.toBinaryString(decodeAInstruction(instruction))
-            );
-            decoded = opCode + fullValue;
-
-        } else {
-            String aValue = "";
-            String compValue = "";
-            String destValue = "";
-            String jumpValue = "";
-            decoded = opCode + aValue + compValue + destValue + jumpValue;
-        }
-
-        if (decoded.length() != 16){
-            throw new RuntimeException(
-                "Something went wrong decoding instruction '" +
-                instruction + "'. The decoded '" +
-                decoded + "' length does not match."
-            );
-        }
-
-        return decoded;
-    }
-
-    public static int decodeAInstruction(String instruction){
-        if (!instruction.startsWith("@")){
-            throw new RuntimeException(
-                "Instruction incorrectly identified as A-Instruction"
-            );
-        }
-
-        String value = instruction.substring(1);
-        if (value.matches("R\\d+")){
-            try{
-                int rValue = Integer.parseInt(
-                    instruction.substring(2)
-                );
-                if (0 <= rValue && rValue <= 15){
-                    return rValue;
-                }
-            } catch (Exception e){
-                System.out.println(
-                    "Something went wrong extracting R value from '" +
-                    instruction + "''."
-                );
-                e.printStackTrace();
-            }
-        }
-
-        if (value.matches("\\d+")){
-            try{
-                return Integer.parseInt(value);
-            } catch (Exception e){
-                System.out.println(
-                    "Something went wrong extracting value from '" +
-                    instruction + "''."
-                );
-                e.printStackTrace();
-            }
-        }
-
-        if(symbolMap.contains(value)){
-            return symbolMap.getAddress(value);
-        }
-
-        throw new RuntimeException(
-            "The label found in instruction '" + instruction + "' was not found."
-        );
-    }
-
-    public static String zeroPad(String value){
-        int needed = 15 - value.length();
-        if(needed < 0){
-            return value;
-        }
-        return "0".repeat(needed) + value;
     }
 }

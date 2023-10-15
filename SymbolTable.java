@@ -2,10 +2,12 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class SymbolTable{
-    Map<String, Integer> symbolMap;
+
+    Map<String, Integer> symbolTable;
+    private static int freeAddress = 16;
 
     public SymbolTable(){
-        this.symbolMap = new HashMap<String, Integer>();
+        this.symbolTable = new HashMap<String, Integer>();
         loadPredefinedSymbols();
     }
 
@@ -20,15 +22,15 @@ public class SymbolTable{
     }
 
     public void addEntry(String symbol, int address){
-        this.symbolMap.put(symbol, address);
+        this.symbolTable.put(symbol, address);
     }
 
     public boolean contains(String symbol){
-        return this.symbolMap.keySet().contains(symbol);
+        return this.symbolTable.keySet().contains(symbol);
     }
 
     public int getAddress(String symbol){
-        return this.symbolMap.get(symbol);
+        return this.symbolTable.get(symbol);
     }
 
 }
