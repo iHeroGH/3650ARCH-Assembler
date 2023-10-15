@@ -5,14 +5,11 @@ import java.util.Scanner;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 
 public class Assembler{
-    protected static Map<String, Integer> symbolMap = new HashMap<String, Integer>();
 
+    protected static SymbolTable symbolMap = new SymbolTable();
     public static void main(String[] args){
-        loadPredefinedSymbols();
         List<String> instructions = readFile("src/test");
         List<String> content = decodeInstructions(instructions);
         writeToFile("src/test", content);
@@ -164,23 +161,13 @@ public class Assembler{
             }
         }
 
-        if(symbolMap.keySet().contains(value)){
-            return symbolMap.get(value);
+        if(symbolMap.contains(value)){
+            return symbolMap.getAddress(value);
         }
 
         throw new RuntimeException(
             "The label found in instruction '" + instruction + "' was not found."
         );
-    }
-
-    public static void loadPredefinedSymbols(){
-        symbolMap.put("SP", 0);
-        symbolMap.put("LCL", 1);
-        symbolMap.put("ARG", 2);
-        symbolMap.put("THIS", 3);
-        symbolMap.put("THAT", 4);
-        symbolMap.put("SCREEN", 16384);
-        symbolMap.put("KBD", 24576);
     }
 
     public static String zeroPad(String value){
