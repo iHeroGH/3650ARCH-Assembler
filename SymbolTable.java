@@ -7,8 +7,9 @@ import java.util.HashMap;
 
 public class SymbolTable{
 
-    Map<String, Integer> symbolTable;
-    int freeAddress;
+    public static String symbolRegex = "^[a-zA-Z_.$:][\\w\\d_.$:]+";
+    private Map<String, Integer> symbolTable;
+    private int freeAddress;
 
     public SymbolTable(){
         this.symbolTable = new HashMap<String, Integer>();
@@ -70,6 +71,14 @@ public class SymbolTable{
             if (curr.matches("\\(.*\\)")){
                 String label = curr.substring(1, curr.length() - 1);
                 if (!this.contains(label)){
+
+                    if (!label.matches(symbolRegex)){
+                        throw new RuntimeException(
+                            "The label '" + label  +
+                            "' does not meet formatting requirements."
+                        );
+                    }
+
                     this.addEntry(label, currCommandAddress);
                 }
             } else {
@@ -102,8 +111,15 @@ public class SymbolTable{
     }
 
     public void addVariable(String symbol){
-        if (!this.contains(symbol))
+        if (!this.contains(symbol)){
+            if (!symbol.matches(symbolRegex)){
+                throw new RuntimeException(
+                    "The symbol '" + symbol  +
+                    "' does not meet formatting requirements."
+                );
+            }
             this.addEntry(symbol, this.freeAddress++);
+        }
     }
 
 }

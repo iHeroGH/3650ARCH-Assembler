@@ -63,6 +63,7 @@ public class Command {
         }
 
         this.symbol = instruction.substring(1);
+        // A register address
         if (this.symbol.matches("R\\d+")){
             try{
                 int rValue = Integer.parseInt(
@@ -80,9 +81,16 @@ public class Command {
             }
         }
 
+        // Any number
         if (this.symbol.matches("\\d+")){
             try{
-                return Integer.parseInt(this.symbol);
+                int value = Integer.parseInt(this.symbol);
+                if (value < 0){
+                    throw new RuntimeException(
+                        "Constants must be non-negative"
+                    );
+                }
+                return value;
             } catch (Exception e){
                 System.out.println(
                     "Something went wrong extracting value from '" +
@@ -92,14 +100,14 @@ public class Command {
             }
         }
 
-        if (this.symbol.matches("@\\D+"))
-            this.symbolTable.addVariable(symbol);
+        this.symbolTable.addVariable(symbol);
 
         if (symbolTable.contains(this.symbol))
             return symbolTable.getAddress(this.symbol);
 
         throw new RuntimeException(
-            "The label found in instruction '" + instruction + "' was not found."
+            "The label found in instruction '" + instruction + "' was " +
+            "problematic. It was either not defined or not formatted."
         );
     }
 
