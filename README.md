@@ -1,3 +1,3 @@
 # 3650ARCH-Assembler
 
-TODO: Testing, Documentation
+Translates a .asm file to a .hack file, from Assembly to Binary
