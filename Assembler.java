@@ -11,7 +11,8 @@ public class Assembler{
     private SymbolTable symbolTable;
     private String fileName;
     private Scanner scanner;
-    private String currentCommand;
+    private String currentInstruction;
+    private Command currentCommand;
 
     public Assembler(String fileName){
         this.fileName = fileName;
@@ -36,7 +37,7 @@ public class Assembler{
     }
 
     public void advance(){
-        this.currentCommand = scanner.nextLine();
+        this.currentInstruction = scanner.nextLine();
     }
 
     public List<Command> readFile(){
@@ -47,13 +48,14 @@ public class Assembler{
             String curr = "";
             while (hasMoreCommands()){
                 advance();
-                curr = sanitizeCommand(currentCommand);
+                curr = sanitizeCommand(currentInstruction);
 
                 if (!shouldAddCommand(curr)){
                     continue;
                 }
 
-                content.add(new Command(curr, this.symbolTable));
+                currentCommand = new Command(curr, this.symbolTable);
+                content.add(currentCommand);
             }
 
             scanner.close();
@@ -72,10 +74,18 @@ public class Assembler{
             .replaceAll("//.*", "");
     }
 
-    public static boolean shouldAddCommand(String command){
+    public static boolean shouldAddCommand(Command command){
+        String instruction = command.getFullInstruction();
         return !(
-            command.startsWith("//") ||
-            command.length() == 0
+            command.getCommandType() == CommandType.L_COMMAND ||
+            !shouldAddCommand(instruction)
+        );
+    }
+
+    public static boolean shouldAddCommand(String instruction){
+        return !(
+            instruction.startsWith("//") ||
+            instruction.length() == 0
         );
     }
 
@@ -84,10 +94,8 @@ public class Assembler{
             PrintWriter writer = new PrintWriter(fileName + ".hack");
 
             // Write all the data from the contents list to the file
-            String instruction = "";
             for(Command command : content){
-                instruction = command.getFullInstruction();
-                if (instruction.length() == 0){
+                if (!shouldAddCommand(command)){
                     continue;
                 }
                 writer.println(command.getFullInstruction());

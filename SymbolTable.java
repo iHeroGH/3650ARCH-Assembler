@@ -8,9 +8,11 @@ import java.util.HashMap;
 public class SymbolTable{
 
     Map<String, Integer> symbolTable;
+    int freeAddress;
 
     public SymbolTable(){
         this.symbolTable = new HashMap<String, Integer>();
+        this.freeAddress = 16;
         loadPredefinedSymbols();
     }
 
@@ -99,5 +101,9 @@ public class SymbolTable{
         scanner.close();
     }
 
+    public void addVariable(String symbol){
+        if (!this.contains(symbol))
+            this.addEntry(symbol, this.freeAddress++);
+    }
 
 }

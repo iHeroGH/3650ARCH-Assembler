@@ -19,21 +19,21 @@ public class Command {
     public String decodeInstruction(){
         if (instruction.startsWith("@")){
             commandType = CommandType.A_COMMAND;
-        } else if (instruction.matches("\\(.*\\)")){
-            commandType = CommandType.L_COMMAND;
-            return "";
-        } else {
-            commandType = CommandType.C_COMMAND;
-        }
-
-        if (commandType == CommandType.A_COMMAND){
             String fullValue = zeroPad(
                 Integer.toBinaryString(decodeAInstruction(instruction))
             );
             this.comp = fullValue.substring(0, 10);
             this.dest = fullValue.substring(10, 13);
             this.jump = fullValue.substring(13);
+
+        } else if (instruction.matches("\\(.*\\)")){
+            commandType = CommandType.L_COMMAND;
+            String fullValue = zeroPad("0");
+            this.comp = fullValue.substring(0, 10);
+            this.dest = fullValue.substring(10, 13);
+            this.jump = fullValue.substring(13);
         } else {
+            commandType = CommandType.C_COMMAND;
             String aValue = "";
             String compValue = "";
             String destValue = "";
@@ -92,24 +92,19 @@ public class Command {
             }
         }
 
-        if(symbolTable.contains(this.symbol)){
+        if (this.symbol.matches("@\\D+"))
+            this.symbolTable.addVariable(symbol);
+
+        if (symbolTable.contains(this.symbol))
             return symbolTable.getAddress(this.symbol);
-        }
 
         throw new RuntimeException(
             "The label found in instruction '" + instruction + "' was not found."
         );
     }
 
-    public String getFullInstruction(){
-        String instruction = this.comp + this.dest + this.jump;
-        if (commandType == CommandType.A_COMMAND){
-            return "0" + instruction;
-        } else if (commandType == CommandType.C_COMMAND){
-            return "111" + instruction;
-        }
-
-        return "";
+    public int decodeCInstruction(String instruction){
+        return 0;
     }
 
     @Override
@@ -123,6 +118,29 @@ public class Command {
             return value;
         }
         return "0".repeat(needed) + value;
+    }
+
+    public CommandType getCommandType(){
+        return this.commandType;
+    }
+
+    public String getComp(){
+        return this.comp;
+    }
+    public String getDest(){
+        return this.dest;
+    }
+    public String getJump(){
+        return this.jump;
+    }
+
+    public String getFullInstruction(){
+        String instruction = this.comp + this.dest + this.jump;
+        if (commandType == CommandType.C_COMMAND){
+            return "111" + instruction;
+        } else {
+            return "0" + instruction;
+        }
     }
 
 }
