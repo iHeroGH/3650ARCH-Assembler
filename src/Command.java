@@ -8,7 +8,7 @@ public class Command {
 
     private static Pattern cPattern = Pattern.compile(
         "^((?<dest>[AMD]{1,3})=)?" + // Matches an optional named group 'dest'
-        "(?<comp>[01\\-+ADM&|]{1,3})" + // Matches a required named group 'comp'
+        "(?<comp>[01\\-+ADM&|!]{1,3})" + // Matches a required named group 'comp'
         "(;(?<jump>J[GTEQLNMP]{2}))?$" // Matches an optional named group 'jump'
 
         // Additional logic will be required to ensure only one of 'dest'
@@ -201,17 +201,18 @@ public class Command {
         mnemonic.put("D", 12);
         mnemonic.put("A", 48);
         mnemonic.put("!D", 13);
-        mnemonic.put("!A", 51);
+        mnemonic.put("!A", 49);
         mnemonic.put("-D", 15);
         mnemonic.put("-A", 51);
         mnemonic.put("D+1", 31);
+        mnemonic.put("A+1", 55);
         mnemonic.put("D-1", 14);
         mnemonic.put("A-1", 50);
         mnemonic.put("D+A", 2);
         mnemonic.put("D-A", 19);
         mnemonic.put("A-D", 7);
         mnemonic.put("D&A", 0);
-        mnemonic.put("D|A", 42);
+        mnemonic.put("D|A", 21);
 
         return mnemonic;
     }
